@@ -1,5 +1,7 @@
+import "./global.css";
 import * as THREE from "three";
-console.log(THREE);
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+
 const scene = new THREE.Scene();
 
 const group = new THREE.Group();
@@ -59,12 +61,29 @@ scene.add(axisHelper);
 
 //Sizes
 const sizes = {
-  width: 800,
-  height: 600,
+  width: window.innerWidth,
+  height: window.innerHeight,
 };
 
+// Mouse Move
+const cursor = {
+  x: 0,
+  y: 0,
+};
+window.addEventListener("mousemove", (e) => {
+  cursor.x = e.clientX / sizes.width - 0.5;
+  cursor.y = -(e.clientY / sizes.height - 0.5);
+  // console.log(cursor);
+});
+
 //Camera
-const camera = new THREE.PerspectiveCamera(45, sizes.width / sizes.height);
+const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height);
+// const camera = new THREE.OrthographicCamera(
+//   -10 * (sizes.width / sizes.height),
+//   10 * (sizes.width / sizes.height),
+//   10,
+//   -10
+// );
 camera.position.z = 5;
 // camera.position.x = 1;
 // camera.position.y = 1;
@@ -75,8 +94,33 @@ const canvas = document.querySelector(".webgl");
 const renderer = new THREE.WebGLRenderer({
   canvas,
 });
-
 renderer.setSize(sizes.width, sizes.height);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+//Resize
+window.addEventListener("resize", () => {
+  //Update camera aspect retio
+  sizes.width = window.innerWidth;
+  sizes.height = window.innerHeight;
+
+  //Update camera aspect retio
+  camera.aspect = sizes.width / sizes.height;
+  camera.updateProjectionMatrix();
+  renderer.setSize(sizes.width, sizes.height);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+});
+//Full screen
+window.addEventListener("dblclick", (e) => {
+  if (!document.fullscreenElement) {
+    canvas.requestFullscreen();
+  } else {
+    document.exitFullscreen();
+  }
+});
+
+//Controls
+const controls = new OrbitControls(camera, canvas);
+controls.enableDamping = true;
+
 let time = Date.now();
 
 //Clock
@@ -86,23 +130,29 @@ const clock = new THREE.Clock();
 const tick = () => {
   //Clock
   const elapsedTime = clock.getElapsedTime();
-  console.log(
-    "🚀 ~ file: index.js:89 ~ tick ~ elapsedTime:",
-    Math.sin(elapsedTime)
-  );
+
   // Delta time
   const currentTime = Date.now();
   const deltaTime = currentTime - time;
   time = currentTime;
 
+  //Update controls
+  controls.update();
+
   //Update Object
-  //   group.rotation.y -= 0.001 * deltaTime;
+  // group.rotation.y -= 0.001 * deltaTime;
   //   group.rotation.y = Math.tan(elapsedTime);
-  group.rotation.x = Math.cos(elapsedTime);
-  group.rotation.y = Math.sin(elapsedTime);
+  // group.rotation.x = Math.cos(elapsedTime);
+  // group.rotation.y = Math.sin(elapsedTime);
   //   camera.rotation.x = Math.cos(elapsedTime);
   //   camera.rotation.y = Math.sin(elapsedTime);
-  camera.lookAt(group.position);
+  // camera.position.x = cursor.x * 5;
+  // camera.position.y = cursor.y * 5;
+  // camera.position.x = Math.sin(cursor.x * Math.PI * 2) * 5;
+  // camera.position.z = Math.cos(cursor.x * Math.PI * 2) * 5;
+  // camera.position.y = cursor.y * 5;
+  // camera.lookAt(group.position);
+  // camera.lookAt(new THREE.Vector3());
   //   group.rotation.y = elapsedTime;
   //   group.rotation.x -= 0.01;
   //   group.rotation.z -= 0.01;
